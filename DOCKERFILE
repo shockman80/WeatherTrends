@@ -1,0 +1,4 @@
+FROM danguderian/spark_image:validation
+LABEL authors="dan.guderian@gmail.com"
+
+COPY target/weather-trends-1.0-SNAPSHOT.jar /opt/weather-trends-1.0-SNAPSHOT.jar
