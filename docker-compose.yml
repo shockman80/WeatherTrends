@@ -21,6 +21,7 @@ services:
     command: ["/usr/bin/supervisord", "--configuration=/opt/conf/slave.conf"]
     volumes:
         - ./docker-volume/spark-output/:/opt/output
+        - ./docker-volume/spark-events/:/opt/spark-events
 
   history-server:
       image: danguderian/spark_image:validation
@@ -31,4 +32,4 @@ services:
         - "18080:18080"
       command: ["/usr/bin/supervisord", "--configuration=/opt/conf/history-server.conf"]
       volumes:
-        - ./docker-volume/spark-output/:/opt/output
+        - ./docker-volume/spark-events:/opt/spark-events

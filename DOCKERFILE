@@ -1,4 +1,10 @@
 FROM danguderian/spark_image:validation
 LABEL authors="dan.guderian@gmail.com"
 
+#https://stackoverflow.com/questions/36680766/spark-job-in-java-how-to-access-files-from-resources-when-run-on-a-cluster/42823029
+
+COPY src/main/resources/zip_codes_states.csv /opt/zip_codes_states.csv
+COPY src/main/resources/isd-history.csv /opt/isd-history.csv
+COPY src/main/resources/gsod_data/* /opt/gsod_data/
+
 COPY target/weather-trends-1.0-SNAPSHOT.jar /opt/weather-trends-1.0-SNAPSHOT.jar

@@ -10,11 +10,11 @@ import org.apache.commons.math3.stat.regression.SimpleRegression
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.{udf, _}
 
-object Application {
+object ApplicationLocal {
 
   def main(args: Array[String]): Unit = {
 
-    val sparkSession = SparkSession.builder().appName("Weather Trend").getOrCreate()
+    val sparkSession = SparkSession.builder().master("local").appName("Weather Trend").getOrCreate()
     import sparkSession.implicits._
 
     // Gather user passed parameters, or use a default value
@@ -26,7 +26,7 @@ object Application {
 
     // Gather the centroid latitude and longitude of the provided zipcode
     val (zipCodeLat, zipCodeLon) = sparkSession.read.option("header","true")
-      .csv("/opt/zip_codes_states.csv")
+      .csv(this.getClass.getClassLoader.getResource("zip_codes_states.csv").getPath)
       .filter($"zip_code" === zipCode).select($"latitude", $"longitude").collect().map(
       row => (row.getString(0), row.getString(1))
     ).head
@@ -54,7 +54,7 @@ object Application {
 
     // Collection of USAF (aka weather station) locations, with a mixin of distance from the provided zip code
     val stationLocations = sparkSession.read.option("header", "true")
-      .csv("/opt/isd-history.csv")
+      .csv(this.getClass.getClassLoader.getResource("isd-history.csv").getPath)
       .filter("USAF is not null")
       .filter("USAF != 999999")
       .filter("LAT is not null")
@@ -67,7 +67,7 @@ object Application {
 
     // Grab all of the gziped gsod weather data from NOAA
     val gsod = sparkSession.read.option("header", "true")
-      .csv("/opt/gsod_data/*")
+      .csv(this.getClass.getClassLoader.getResource("gsod_data").getPath +"/*")
 
     // Filter by the closest station and the day that we care about
     val filteredData = gsod.select($"STN---" as "stationNumber",$"WBAN",$"YEAR",$"MO",$"DA", $"TEMP")
@@ -96,7 +96,7 @@ object Application {
     val output = (s"For the zipcode: ${zipCode}, the weather has been having a(n) ${trend} temperature trend on " +
       s"${localDate.getMonth.getDisplayName(TextStyle.SHORT,Locale.US)} ${localDate.getDayOfMonth}")
 
-    Files.write(Paths.get(s"/opt/output/weatherTrend/weatherTrends${zipCode}_${localDate.toString}.txt"), output.getBytes(StandardCharsets.UTF_8))
+    Files.write(Paths.get(s"weatherTrends${zipCode}_${localDate.toString}.txt"), output.getBytes(StandardCharsets.UTF_8))
 
     sparkSession.stop()
   }
